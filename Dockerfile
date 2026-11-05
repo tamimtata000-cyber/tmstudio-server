@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt-lists/*
 
-# ভার্চুয়াল এনভায়রনমেন্ট তৈরি করে yt-dlp ইনস্টল (সবচেয়ে নিরাপদ পদ্ধতি)
+# ভার্চুয়াল এনভায়রনমেন্ট তৈরি করে yt-dlp ইনস্টল ও লেটেস্ট আপডেট নিশ্চিত করা
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
