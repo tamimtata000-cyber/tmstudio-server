@@ -18,8 +18,14 @@ app.get('/api/download', (req, res) => {
         });
     }
 
-    // exec-এর বদলে execFile ব্যবহার করে কমান্ড ইনজেকশন রোধ ও ৩০MB পর্যন্ত বাফার হ্যান্ডলিং
-    const args = ['-j', '--no-playlist', '--no-warnings', videoUrl];
+    // ইউটিউবের বট প্রটেকশন বাইপাস করার জন্য লেটেস্ট এক্সট্রাক্টর আর্গুমেন্ট যুক্ত করা হলো
+    const args = [
+        '-j', 
+        '--no-playlist', 
+        '--no-warnings', 
+        '--extractor-args', 'youtube:player_client=android,web',
+        videoUrl
+    ];
 
     execFile('yt-dlp', args, { maxBuffer: 1024 * 1024 * 30 }, (error, stdout, stderr) => {
         if (error) {
