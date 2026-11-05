@@ -1,15 +1,13 @@
 const express = require('express');
 const cors = require('cors');
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// সিকিউরিটি ও ক্রস-অরিজিন পারমিশন
 app.use(cors());
 app.use(express.json());
 
-// মূল ভিডিও প্রসেসিং এন্ডপয়েন্ট
 app.get('/api/download', (req, res) => {
     const videoUrl = req.query.url;
 
@@ -20,29 +18,28 @@ app.get('/api/download', (req, res) => {
         });
     }
 
-    // yt-dlp ব্যবহার করে ফাস্ট JSON ডাটা এক্সট্রাক্ট করা
-    const command = `yt-dlp -j --no-playlist "${videoUrl}"`;
+    // exec-এর বদলে execFile ব্যবহার করে কমান্ড ইনজেকশন রোধ ও ৩০MB পর্যন্ত বাফার হ্যান্ডলিং
+    const args = ['-j', '--no-playlist', '--no-warnings', videoUrl];
 
-    exec(command, { maxBuffer: 1024 * 1024 * 15 }, (error, stdout, stderr) => {
+    execFile('yt-dlp', args, { maxBuffer: 1024 * 1024 * 30 }, (error, stdout, stderr) => {
         if (error) {
-            console.error(`yt-dlp Error: ${error.message}`);
+            console.error(`yt-dlp Execution Error: ${error.message}`);
             return res.status(500).json({ 
                 status: 'error', 
-                message: 'ভিডিওটি লোড করা সম্ভব হয়নি। লিঙ্কটি সঠিক আছে কিনা চেক করুন অথবা সার্ভার আপডেট দিন।' 
+                message: 'ভিডিও ডাটা ফেচ করা সম্ভব হয়নি। লিঙ্কটি ঠিক আছে কিনা বা ভিডিওটি প্রাইভেট কিনা চেক করুন।' 
             });
         }
 
         try {
             const videoData = JSON.parse(stdout);
 
-            // ফরম্যাট ও রেজুলেশন ফিল্টার করা
             const formats = (videoData.formats || []).map(f => ({
                 format_id: f.format_id,
-                resolution: f.format_note || f.resolution || 'Unknown',
+                resolution: f.format_note || f.resolution || (f.height ? `${f.height}p` : 'Unknown'),
                 ext: f.ext,
-                filesize: f.filesize ? (f.filesize / (1024 * 1024)).toFixed(2) + ' MB' : 'Size N/A',
+                filesize: f.filesize ? (f.filesize / (1024 * 1024)).toFixed(2) + ' MB' : (f.filesize_approx ? (f.filesize_approx / (1024 * 1024)).toFixed(2) + ' MB (approx)' : 'Size N/A'),
                 url: f.url
-            })).filter(f => f.url); // শুধু যেগুলোর ডাউনলোড লিঙ্ক আছে
+            })).filter(f => f.url);
 
             const responseData = {
                 status: 'success',
@@ -65,7 +62,6 @@ app.get('/api/download', (req, res) => {
     });
 });
 
-// সার্ভার স্ট্যাটাস চেক করার রুট
 app.get('/', (req, res) => {
     res.json({ status: 'online', message: 'TM.Studio Backend Server is running smoothly!' });
 });
