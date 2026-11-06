@@ -3,7 +3,7 @@ from flask_cors import CORS
 import requests
 import os
 
-app = FlaskName := Flask(__name__)
+app = Flask(__name__)
 CORS(app)
 
 @app.route('/api/download', methods=['GET'])
@@ -16,8 +16,7 @@ def download_video():
             'message': 'অনুগ্রহ করে একটি সঠিক ভিডিও লিঙ্ক প্রদান করুন।'
         }), 400
 
-    # ফ্রি এবং বিশ্বস্ত পাবলিক ডাউনলোডার এপিআই ব্যবহার
-    api_endpoint = f"https://co.wuk.sh/api/json"
+    api_endpoint = "https://co.wuk.sh/api/json"
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -32,13 +31,11 @@ def download_video():
     try:
         response = requests.post(api_endpoint, json=payload, headers=headers, timeout=15)
         
-        # যদি এপিআই কাজ না করে বা লিমি트 শেষ হয়ে যায়
         if response.status_code != 200:
             raise Exception("API Limit Exceeded or Server Busy")
             
         data = response.json()
         
-        # সফলভাবে ডেটা আসলে তা সাজিয়ে পাঠানো
         if data.get('status') == 'stream' or data.get('status') == 'redirect':
             formats = [{
                 'format_id': 'best',
@@ -51,7 +48,7 @@ def download_video():
             return jsonify({
                 'status': 'success',
                 'title': data.get('filename', 'TM.Studio Download Video'),
-                'thumbnail': '', # এপিআই থেকে থাম্বনেইল না আসলে ফন্টএন্ড ডিফল্ট দেখাবে
+                'thumbnail': '',
                 'duration': 'N/A',
                 'embedUrl': video_url,
                 'formats': formats
@@ -61,7 +58,6 @@ def download_video():
 
     except Exception as e:
         print(f"Server Error: {str(e)}")
-        # আপনার চাওয়া সেই সুন্দর ও মার্জিত এরর ম্যাসেজ যা ইউজারদের বিরক্ত হতে দেবে না
         return jsonify({
             'status': 'error',
             'message': '⚠️ সার্ভারে ছোট্ট একটি যান্ত্রিক ত্রুটি দেখা দিয়েছে। আমরা এটি ঠিক করার কাজ করছি, দয়া করে কিছুক্ষণ ধৈর্য ধরে একটু পরে আবার চেষ্টা করুন।'
