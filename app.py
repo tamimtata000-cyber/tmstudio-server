@@ -16,20 +16,28 @@ def download_video():
             'message': 'অনুগ্রহ করে একটি সঠিক ভিডিও লিঙ্ক প্রদান করুন।'
         }), 400
 
-    # yt-dlp কনফিগারেশন (সকল সোশ্যাল মিডিয়া বাইপাস করার জন্য আল্টিমেট আর্গুমেন্টস)
+    # ইউটিউবের আইপি ব্লকিং এবং বট প্রটেকশন সম্পূর্ণ বাইপাস করার আল্টিমেট কনফিগারেশন
     ydl_opts = {
         'format': 'best',
         'noplaylist': True,
         'quiet': True,
-        'extractor_args': {'youtube': {'player_client': ['android', 'ios', 'web']}},
-        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios', 'web'],
+                'skip': ['hls', 'dash']
+            }
+        },
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'socket_timeout': 30,
+        'nocheckcertificate': True,
+        'ignoreerrors': False,
+        'no_warnings': True
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(video_url, download=False)
             
-            # ফরম্যাট বা রেজুলেশনগুলো সাজানো
             formats = []
             for f in info_dict.get('formats', []):
                 if f.get('url'):
@@ -56,15 +64,15 @@ def download_video():
             return jsonify(response_data)
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Detailed Error: {str(e)}")
         return jsonify({
             'status': 'error',
-            'message': 'ভিডিও ডাটা ফেচ করা সম্ভব হয়নি। লিঙ্কটি সঠিক আছে কি না বা ভিডিওটি পাবলিক আছে কি না যাচাই করুন।'
+            'message': 'ইউটিউব সার্ভার থেকে ডাটা ব্লক করা হয়েছে। দয়া করে কিছুক্ষণ পর আবার চেষ্টা করুন।'
         }), 500
 
 @app.route('/', methods=['GET'])
 def home():
-    return jsonify({'status': 'online', 'message': 'TM.Studio Python Backend is running smoothly!'})
+    return jsonify({'status': 'online', 'message': 'TM.Studio Ultimate Backend is running!'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
