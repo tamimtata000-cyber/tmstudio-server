@@ -18,13 +18,14 @@ app.get('/api/download', (req, res) => {
         });
     }
 
-    // ইউটিউবের শক্তিশালী অ্যালগরিদম ও বট প্রটেকশন বাইপাস করার জন্য অ্যাডভান্সড আর্গুমেন্টস
+    // ইউটিউবের শক্তিশালী এন্ট্রি-বট প্রটেকশন বাইপাস করার জন্য আল্টিমেট আর্গুমেন্টস
     const args = [
         '-j', 
         '--no-playlist', 
         '--no-warnings', 
         '--extractor-args', 'youtube:player_client=android,web',
-        '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        '--geo-bypass',
         videoUrl
     ];
 
