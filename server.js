@@ -18,12 +18,13 @@ app.get('/api/download', (req, res) => {
         });
     }
 
-    // ইউটিউবের বট প্রটেকশন বাইপাস করার জন্য লেটেস্ট এক্সট্রাক্টর আর্গুমেন্ট যুক্ত করা হলো
+    // ইউটিউবের শক্তিশালী অ্যালগরিদম ও বট প্রটেকশন বাইপাস করার জন্য অ্যাডভান্সড আর্গুমেন্টস
     const args = [
         '-j', 
         '--no-playlist', 
         '--no-warnings', 
         '--extractor-args', 'youtube:player_client=android,web',
+        '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         videoUrl
     ];
 
@@ -32,7 +33,7 @@ app.get('/api/download', (req, res) => {
             console.error(`yt-dlp Execution Error: ${error.message}`);
             return res.status(500).json({ 
                 status: 'error', 
-                message: 'ভিডিও ডাটা ফেচ করা সম্ভব হয়নি। লিঙ্কটি ঠিক আছে কিনা বা ভিডিওটি প্রাইভেট কিনা চেক করুন।' 
+                message: 'ভিডিও ডাটা ফেচ করা সম্ভব হয়নি। লিঙ্কটি সঠিক আছে কি না বা ভিডিওটি পাবলিক আছে কি না যাচাই করুন।' 
             });
         }
 
