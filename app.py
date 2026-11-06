@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import yt_dlp
+import requests
 import os
 
-app = Flask(__name__)
+app = FlaskName := Flask(__name__)
 CORS(app)
 
 @app.route('/api/download', methods=['GET'])
@@ -16,63 +16,60 @@ def download_video():
             'message': 'অনুগ্রহ করে একটি সঠিক ভিডিও লিঙ্ক প্রদান করুন।'
         }), 400
 
-    # ইউটিউবের আইপি ব্লকিং এবং বট প্রটেকশন সম্পূর্ণ বাইপাস করার আল্টিমেট কনফিগারেশন
-    ydl_opts = {
-        'format': 'best',
-        'noplaylist': True,
-        'quiet': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'ios', 'web'],
-                'skip': ['hls', 'dash']
-            }
-        },
-        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'socket_timeout': 30,
-        'nocheckcertificate': True,
-        'ignoreerrors': False,
-        'no_warnings': True
+    # ফ্রি এবং বিশ্বস্ত পাবলিক ডাউনলোডার এপিআই ব্যবহার
+    api_endpoint = f"https://co.wuk.sh/api/json"
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/123.0.0.0'
+    }
+    payload = {
+        'url': video_url,
+        'vQuality': '720',
+        'isAudioOnly': False
     }
 
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(video_url, download=False)
+        response = requests.post(api_endpoint, json=payload, headers=headers, timeout=15)
+        
+        # যদি এপিআই কাজ না করে বা লিমি트 শেষ হয়ে যায়
+        if response.status_code != 200:
+            raise Exception("API Limit Exceeded or Server Busy")
             
-            formats = []
-            for f in info_dict.get('formats', []):
-                if f.get('url'):
-                    filesize = f.get('filesize') or f.get('filesize_approx')
-                    size_str = f"{filesize / (1024 * 1024):.2f} MB" if filesize else "Size N/A"
-                    
-                    formats.append({
-                        'format_id': f.get('format_id'),
-                        'resolution': f.get('format_note') or f.get('resolution') or f"{f.get('height', 'Unknown')}p",
-                        'ext': f.get('ext'),
-                        'filesize': size_str,
-                        'url': f.get('url')
-                    })
-
-            response_data = {
+        data = response.json()
+        
+        # সফলভাবে ডেটা আসলে তা সাজিয়ে পাঠানো
+        if data.get('status') == 'stream' or data.get('status') == 'redirect':
+            formats = [{
+                'format_id': 'best',
+                'resolution': 'HD / Best Quality',
+                'ext': 'mp4',
+                'filesize': 'N/A',
+                'url': data.get('url')
+            }]
+            
+            return jsonify({
                 'status': 'success',
-                'title': info_dict.get('title', 'Untitled Video'),
-                'thumbnail': info_dict.get('thumbnail', ''),
-                'duration': info_dict.get('duration_string', '0:00'),
-                'embedUrl': f"https://www.youtube.com/embed/{info_dict.get('id')}" if 'youtube.com' in video_url or 'youtu.be' in video_url else video_url,
+                'title': data.get('filename', 'TM.Studio Download Video'),
+                'thumbnail': '', # এপিআই থেকে থাম্বনেইল না আসলে ফন্টএন্ড ডিফল্ট দেখাবে
+                'duration': 'N/A',
+                'embedUrl': video_url,
                 'formats': formats
-            }
-
-            return jsonify(response_data)
+            })
+        else:
+            raise Exception("Invalid response structure")
 
     except Exception as e:
-        print(f"Detailed Error: {str(e)}")
+        print(f"Server Error: {str(e)}")
+        # আপনার চাওয়া সেই সুন্দর ও মার্জিত এরর ম্যাসেজ যা ইউজারদের বিরক্ত হতে দেবে না
         return jsonify({
             'status': 'error',
-            'message': 'ইউটিউব সার্ভার থেকে ডাটা ব্লক করা হয়েছে। দয়া করে কিছুক্ষণ পর আবার চেষ্টা করুন।'
+            'message': '⚠️ সার্ভারে ছোট্ট একটি যান্ত্রিক ত্রুটি দেখা দিয়েছে। আমরা এটি ঠিক করার কাজ করছি, দয়া করে কিছুক্ষণ ধৈর্য ধরে একটু পরে আবার চেষ্টা করুন।'
         }), 500
 
 @app.route('/', methods=['GET'])
 def home():
-    return jsonify({'status': 'online', 'message': 'TM.Studio Ultimate Backend is running!'})
+    return jsonify({'status': 'online', 'message': 'TM.Studio Smart Backend is running smoothly!'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
